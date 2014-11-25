@@ -1,5 +1,8 @@
 package ds.gae.entities;
 
+import javax.persistence.MappedSuperclass;
+
+@MappedSuperclass
 public class Reservation extends Quote {
 
     private int carId;
