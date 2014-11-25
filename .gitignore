@@ -1,3 +1,10 @@
+#GAE en Eclipse
+.classpath
+.project
+build.xml
+/war/*
+/.settings/
+
 *.class
 
 # Mobile Tools for Java (J2ME)
