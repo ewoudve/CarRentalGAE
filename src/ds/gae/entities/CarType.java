@@ -1,7 +1,17 @@
 package ds.gae.entities;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+import com.google.appengine.api.datastore.Key;
+
 public class CarType {
     
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)	
+	private Key id;
+	
     private String name;
     private int nbOfSeats;
     private boolean smokingAllowed;

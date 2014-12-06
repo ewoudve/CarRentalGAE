@@ -1,11 +1,12 @@
 package ds.gae.entities;
 
-import javax.persistence.MappedSuperclass;
+import javax.persistence.Entity;
 
-@MappedSuperclass
+@Entity
 public class Reservation extends Quote {
 
-    private int carId;
+	private static final long serialVersionUID = 1L;
+	private int carId;
     
     /***************
 	 * CONSTRUCTOR *

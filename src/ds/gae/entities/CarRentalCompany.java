@@ -11,14 +11,22 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+
 import ds.gae.ReservationException;
 
 public class CarRentalCompany {
 
 	private static Logger logger = Logger.getLogger(CarRentalCompany.class.getName());
 	
+	@Id
 	private String name;
+	
+	@OneToMany(cascade = CascadeType.REMOVE)
 	private Set<Car> cars;
+	@OneToMany(cascade = CascadeType.PERSIST)
 	private Map<String,CarType> carTypes = new HashMap<String, CarType>();
 
 	/***************
