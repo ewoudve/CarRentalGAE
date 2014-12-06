@@ -5,8 +5,11 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 @Entity
 public class Car implements Serializable{
@@ -15,7 +18,11 @@ public class Car implements Serializable{
 	private static final long serialVersionUID = 1L;
 	@Id
     private int id;
+	
+	@ManyToOne
     private CarType type;
+    
+    @OneToMany(cascade=CascadeType.PERSIST)
     private Set<Reservation> reservations;
 
     /***************
