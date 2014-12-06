@@ -1,5 +1,6 @@
 package ds.gae.entities;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -12,12 +13,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
 import ds.gae.ReservationException;
 
-public class CarRentalCompany {
+@Entity
+public class CarRentalCompany implements Serializable{
+
+	private static final long serialVersionUID = 1L;
 
 	private static Logger logger = Logger.getLogger(CarRentalCompany.class.getName());
 	
