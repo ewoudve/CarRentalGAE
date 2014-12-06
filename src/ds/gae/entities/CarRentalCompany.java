@@ -14,12 +14,8 @@ import java.util.logging.Logger;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-
-import com.google.appengine.api.datastore.Key;
 
 import ds.gae.ReservationException;
 
@@ -33,7 +29,7 @@ public class CarRentalCompany implements Serializable{
 	@Id
 	private String name;
 	
-	@OneToMany(cascade = CascadeType.PERSIST)
+	@OneToMany(cascade = CascadeType.ALL)
 	private Set<Car> cars;
 	@OneToMany(cascade = CascadeType.PERSIST)
 	private Map<String,CarType> carTypes = new HashMap<String, CarType>();

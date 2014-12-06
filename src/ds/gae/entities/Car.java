@@ -7,9 +7,13 @@ import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+
+import com.google.appengine.api.datastore.Key;
 
 @Entity
 public class Car implements Serializable{
@@ -17,12 +21,15 @@ public class Car implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
 	@Id
-    private int id;
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+    private Key key;
+	
+	private int id;
 	
 	@ManyToOne
     private CarType type;
     
-    @OneToMany(cascade=CascadeType.PERSIST)
+    @OneToMany(cascade=CascadeType.REMOVE)
     private Set<Reservation> reservations;
 
     /***************
