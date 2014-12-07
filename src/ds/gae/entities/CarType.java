@@ -1,11 +1,15 @@
 package ds.gae.entities;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 
 import com.google.appengine.api.datastore.Key;
 
@@ -16,7 +20,10 @@ public class CarType implements Serializable{
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)	
-	private Key id;
+	private Key key;
+	
+	@OneToMany(cascade=CascadeType.PERSIST)
+	private Set<Car> cars;
 	
     private String name;
     private int nbOfSeats;
@@ -30,11 +37,24 @@ public class CarType implements Serializable{
 	 ***************/
     
     public CarType(String name, int nbOfSeats, float trunkSpace, double rentalPricePerDay, boolean smokingAllowed) {
+        this.cars=new HashSet<Car>();
         this.name = name;
         this.nbOfSeats = nbOfSeats;
         this.trunkSpace = trunkSpace;
         this.rentalPricePerDay = rentalPricePerDay;
         this.smokingAllowed = smokingAllowed;
+    }
+    
+    public Key getKey() {
+        return key;
+    }
+    
+    public void addCar(Car car) {
+    	this.cars.add(car);
+    }
+    
+    public Set<Car> getCars(){
+    	return cars;
     }
 
     public String getName() {

@@ -16,10 +16,11 @@ import javax.persistence.OneToMany;
 import com.google.appengine.api.datastore.Key;
 
 @Entity
-public class Car implements Serializable{
+public class Car implements Serializable {
 
 	
 	private static final long serialVersionUID = 1L;
+	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
     private Key key;
@@ -29,8 +30,13 @@ public class Car implements Serializable{
 	@ManyToOne
     private CarType type;
     
+	//Ben niet zeker van de CascadeType? ALL of REMOVE?
     @OneToMany(cascade=CascadeType.REMOVE)
     private Set<Reservation> reservations;
+    
+    public Key getKey() {
+        return key;
+    }
 
     /***************
      * CONSTRUCTOR *
@@ -38,7 +44,6 @@ public class Car implements Serializable{
     
     public Car(int uid, CarType type) {
     	this.id = uid;
-        this.type = type;
         this.reservations = new HashSet<Reservation>();
     }
 
