@@ -38,7 +38,7 @@ public class Car implements Serializable{
     
     public Car(int uid, CarType type) {
     	this.id = uid;
-        this.type = type;
+    	this.type = type;
         this.reservations = new HashSet<Reservation>();
     }
 
@@ -50,6 +50,7 @@ public class Car implements Serializable{
     	return id;
     }
     
+
     /************
      * CAR TYPE *
      ************/
