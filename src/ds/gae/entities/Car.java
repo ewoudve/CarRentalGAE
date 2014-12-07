@@ -26,9 +26,6 @@ public class Car implements Serializable {
     private Key key;
 	
 	private int id;
-	
-	@ManyToOne
-    private CarType type;
     
 	//Ben niet zeker van de CascadeType? ALL of REMOVE?
     @OneToMany(cascade=CascadeType.REMOVE)
@@ -42,9 +39,8 @@ public class Car implements Serializable {
      * CONSTRUCTOR *
      ***************/
     
-    public Car(int uid, CarType type) {
+    public Car(int uid) {
     	this.id = uid;
-    	this.type = type;
         this.reservations = new HashSet<Reservation>();
     }
 
@@ -56,14 +52,6 @@ public class Car implements Serializable {
     	return id;
     }
     
-
-    /************
-     * CAR TYPE *
-     ************/
-    
-    public CarType getType() {
-        return type;
-    }
 
     /****************
      * RESERVATIONS *
