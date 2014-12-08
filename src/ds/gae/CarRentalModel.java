@@ -230,13 +230,12 @@ public class CarRentalModel {
 		System.out.println("break10");
 		EntityManager em = EMF.get().createEntityManager();
 		List<Car> cars = new ArrayList<Car>();
-		Query query = em
-				.createQuery(
-						"SELECT ct.cars FROM CarType ct WHERE ct=:type IN"
-								+ "(SELECT crc.carTypes FROM CarRentalCompany crc WHERE crc.name=:company)")
-				.setParameter("company", crcName)
-				.setParameter("type", carType);
-		cars.addAll(query.getResultList());
+		CarRentalCompany crc = em.find(CarRentalCompany.class, crcName);
+		for (CarType ct : crc.getAllCarTypes()) {
+			if (ct.equals(carType)) {
+				cars.addAll(ct.getCars());
+			}
+		}
 		em.close();
 		return cars;
 	}
