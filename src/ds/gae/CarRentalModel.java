@@ -39,7 +39,6 @@ public class CarRentalModel {
 	 * 			in the given car rental company.
 	 */
 	public Set<String> getCarTypesNames(String crcName) {
-		System.out.println("break1");
 		EntityManager em = EMF.get().createEntityManager();
 		Set<String> names = new HashSet<String>();
 		Query query = em
@@ -58,7 +57,6 @@ public class CarRentalModel {
      * @return	the list of car rental companies
      */
     public Collection<String> getAllRentalCompanyNames() {
-    	System.out.println("break2");
     	Set<String> names = new HashSet<String>();
     	EntityManager em = EMF.get().createEntityManager();
     	Query query = em.createQuery("SELECT crc.name FROM CarRentalCompany crc");
@@ -82,7 +80,6 @@ public class CarRentalModel {
 	 * 			No car available that fits the given constraints.
 	 */
     public Quote createQuote(String company, String renterName, ReservationConstraints constraints) throws ReservationException {
-    	System.out.println("break3");
     	EntityManager em = EMF.get().createEntityManager();
 		CarRentalCompany crc = em.find(CarRentalCompany.class, company);
 		Quote out = null;
@@ -107,7 +104,6 @@ public class CarRentalModel {
 	 * 			Confirmation of given quote failed.	
 	 */
 	public void confirmQuote(Quote q) throws ReservationException {
-		System.out.println("break4");
         EntityManager em = EMF.get().createEntityManager();
     	CarRentalCompany crc = em.find(CarRentalCompany.class, q.getRentalCompany());
         Reservation r = crc.confirmQuote(q);
@@ -127,7 +123,6 @@ public class CarRentalModel {
 	 * 			Therefore none of the given quotes is confirmed.
 	 */
     public List<Reservation> confirmQuotes(List<Quote> quotes) throws ReservationException { 
-    	System.out.println("break5");
     	List<Reservation> done = new ArrayList<Reservation>();
 
 		try {
@@ -157,7 +152,6 @@ public class CarRentalModel {
 	 * @return	the list of reservations of the given car renter
 	 */
 	public List<Reservation> getReservations(String renter) {
-		System.out.println("break6");
 		List<Reservation> out = new ArrayList<Reservation>();
 		EntityManager em = EMF.get().createEntityManager();
 		Query q = em.createQuery(
@@ -176,7 +170,6 @@ public class CarRentalModel {
      */
 	@SuppressWarnings("unchecked")
 	public Collection<CarType> getCarTypesOfCarRentalCompany(String crcName) {
-		System.out.println("break7");
 		EntityManager em = EMF.get().createEntityManager();
 		Collection<CarType> types = (Collection<CarType>) em.createQuery(
 						"SELECT crc.carTypes FROM CarRentalCompany crc WHERE crc.name=:company")
@@ -195,7 +188,6 @@ public class CarRentalModel {
      * @return	A list of car IDs of cars with the given car type.
      */
     public Collection<Integer> getCarIdsByCarType(String crcName, CarType carType) {
-    	System.out.println("break8");
     	Collection<Integer> out = new ArrayList<Integer>();
     	for (Car c : getCarsByCarType(crcName, carType)) {
     		out.add(c.getId());
@@ -213,7 +205,6 @@ public class CarRentalModel {
      * @return	A number, representing the amount of cars of the given car type.
      */
     public int getAmountOfCarsByCarType(String crcName, CarType carType) {
-    	System.out.println("break9");
     	return this.getCarsByCarType(crcName, carType).size();
     }
 
@@ -227,7 +218,6 @@ public class CarRentalModel {
 	 * @return	List of cars of the given car type
 	 */
 	private List<Car> getCarsByCarType(String crcName, CarType carType) {
-		System.out.println("break10");
 		EntityManager em = EMF.get().createEntityManager();
 		List<Car> cars = new ArrayList<Car>();
 		CarRentalCompany crc = em.find(CarRentalCompany.class, crcName);
@@ -249,7 +239,6 @@ public class CarRentalModel {
 	 * 			False otherwise.
 	 */
 	public boolean hasReservations(String renter) {
-		System.out.println("break11");
 		return this.getReservations(renter).size() > 0;		
 	}	
 }
