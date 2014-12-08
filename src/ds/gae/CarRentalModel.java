@@ -3,9 +3,13 @@ package ds.gae;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 
 import ds.gae.entities.Car;
 import ds.gae.entities.CarRentalCompany;
@@ -35,8 +39,16 @@ public class CarRentalModel {
 	 * 			in the given car rental company.
 	 */
 	public Set<String> getCarTypesNames(String crcName) {
-		// TODO add implementation
-    	return null;
+		EntityManager em = EMF.get().createEntityManager();
+		Set<String> names = new HashSet<String>();
+		Query query = em
+				.createQuery(
+						"SELECT ct.name FROM CarType ct WHERE ct IN"
+								+ "(SELECT crc.carTypes FROM CarRentalCompany crc WHERE crc.name=:company)")
+				.setParameter("company", crcName);
+		names.addAll(query.getResultList());
+		em.close();
+		return names;
 	}
 
     /**
@@ -45,8 +57,12 @@ public class CarRentalModel {
      * @return	the list of car rental companies
      */
     public Collection<String> getAllRentalCompanyNames() {
-		// FIXME use persistence instead
-    	return CRCS.keySet();
+    	Set<String> names = new HashSet<String>();
+    	EntityManager em = EMF.get().createEntityManager();
+    	Query query = em.createQuery("SELECT crc.name FROM CarRentalCompany crc");
+    	names.addAll(query.getResultList());
+    	em.close();
+    	return names;
     }
 	
 	/**
@@ -64,18 +80,18 @@ public class CarRentalModel {
 	 * 			No car available that fits the given constraints.
 	 */
     public Quote createQuote(String company, String renterName, ReservationConstraints constraints) throws ReservationException {
-		// FIXME: use persistence instead
-    	
-    	CarRentalCompany crc = CRCS.get(company);
-    	Quote out = null;
+		EntityManager em = EMF.get().createEntityManager();
+		CarRentalCompany crc = em.find(CarRentalCompany.class, company);
+		Quote out = null;
 
-        if (crc != null) {
-            out = crc.createQuote(constraints, renterName);
-        } else {
-        	throw new ReservationException("CarRentalCompany not found.");    	
-        }
-        
-        return out;
+		if (crc != null) {
+			out = crc.createQuote(constraints, renterName);
+		} else {
+			throw new ReservationException("CarRentalCompany not found.");
+		}
+		em.persist(crc);
+		em.close();
+		return out;
     }
     
 	/**
@@ -88,10 +104,11 @@ public class CarRentalModel {
 	 * 			Confirmation of given quote failed.	
 	 */
 	public void confirmQuote(Quote q) throws ReservationException {
-		// FIXME: use persistence instead
-
-		CarRentalCompany crc = CRCS.get(q.getRentalCompany());
-        crc.confirmQuote(q);
+        EntityManager em = EMF.get().createEntityManager();
+    	CarRentalCompany crc = em.find(CarRentalCompany.class, q.getRentalCompany());
+        Reservation r = crc.confirmQuote(q);
+        em.persist(r);
+        em.close();
 	}
 	
     /**
@@ -105,9 +122,26 @@ public class CarRentalModel {
 	 * 			One of the quotes cannot be confirmed. 
 	 * 			Therefore none of the given quotes is confirmed.
 	 */
-    public List<Reservation> confirmQuotes(List<Quote> quotes) throws ReservationException {    	
-		// TODO add implementation
-    	return null;
+    public List<Reservation> confirmQuotes(List<Quote> quotes) throws ReservationException { 
+		List<Reservation> done = new ArrayList<Reservation>();
+
+		try {
+			for (Quote quote : quotes) {
+				confirmQuote(quote);
+			}
+		} catch (ReservationException re) {
+			EntityManager em = EMF.get().createEntityManager();
+			for (Reservation r : done) {
+				CarRentalCompany crc = em.find(CarRentalCompany.class,
+						r.getRentalCompany());
+				crc.cancelReservation(r);
+			}
+			em.close();
+			throw new ReservationException("Reservation failed: "
+					+ re.getMessage());
+		}
+
+		return done;
     }
 	
 	/**
@@ -118,22 +152,14 @@ public class CarRentalModel {
 	 * @return	the list of reservations of the given car renter
 	 */
 	public List<Reservation> getReservations(String renter) {
-		// FIXME: use persistence instead
-		
 		List<Reservation> out = new ArrayList<Reservation>();
-		
-    	for (CarRentalCompany crc : CRCS.values()) {
-    		for (Car c : crc.getCars()) {
-    			for (Reservation r : c.getReservations()) {
-    				if (r.getCarRenter().equals(renter)) {
-    					out.add(r);
-    				}
-    			}
-    		}
-    	}
-    	
-    	return out;
-    }
+		EntityManager em = EMF.get().createEntityManager();
+		Query q = em.createQuery(
+				"SELECT r FROM Reservation r WHERE r.carRenter=:renter")
+				.setParameter("renter", renter);
+		out.addAll(q.getResultList());
+		return out;
+	}
 
     /**
      * Get the car types available in the given car rental company.
@@ -142,13 +168,17 @@ public class CarRentalModel {
      * 			the given car rental company
      * @return	The list of car types in the given car rental company.
      */
-    public Collection<CarType> getCarTypesOfCarRentalCompany(String crcName) {
-		// FIXME: use persistence instead
-
-    	CarRentalCompany crc = CRCS.get(crcName);
-    	Collection<CarType> out = new ArrayList<CarType>(crc.getAllCarTypes());
-        return out;
-    }
+	public Collection<CarType> getCarTypesOfCarRentalCompany(String crcName) {
+		EntityManager em = EMF.get().createEntityManager();
+		Collection<CarType> types = new HashSet<CarType>();
+		Query q = em
+				.createQuery(
+						"SELECT crc.carTypes FROM CarRentalCompany crc WHERE crc.name=:company")
+				.setParameter("company", crcName);
+		types.addAll(q.getResultList());
+		em.close();
+		return types;
+	}
 	
     /**
      * Get the list of cars of the given car type in the given car rental company.
@@ -190,17 +220,17 @@ public class CarRentalModel {
 	 * @return	List of cars of the given car type
 	 */
 	private List<Car> getCarsByCarType(String crcName, CarType carType) {				
-		// FIXME: use persistence instead
-
-		List<Car> out = new ArrayList<Car>(); 
-		for(CarRentalCompany crc : CRCS.values()) {
-			for(CarType type :crc.getAllCarTypes()){
-				if(type.equals(carType)){
-					out.addAll(type.getCars());
-				}
-			}
-		}
-		return out;
+		EntityManager em = EMF.get().createEntityManager();
+		List<Car> cars = new ArrayList<Car>();
+		Query query = em
+				.createQuery(
+						"SELECT ct.cars FROM CarType ct WHERE ct=:type IN"
+								+ "(SELECT crc.carTypes FROM CarRentalCompany crc WHERE crc.name=:company)")
+				.setParameter("company", crcName)
+				.setParameter("type", carType);
+		cars.addAll(query.getResultList());
+		em.close();
+		return cars;
 	}
 
 	/**
