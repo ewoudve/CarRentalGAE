@@ -27,7 +27,7 @@ public class Car implements Serializable {
 	private int id;
     
 	//Ben niet zeker van de CascadeType? ALL of REMOVE?
-    @OneToMany(cascade=CascadeType.REMOVE)
+    @OneToMany(cascade=CascadeType.ALL)
     private Set<Reservation> reservations;
     
     public Key getKey() {
