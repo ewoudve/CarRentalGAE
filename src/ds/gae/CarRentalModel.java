@@ -13,6 +13,7 @@ import javax.persistence.Query;
 
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.TaskOptions;
 import com.google.appengine.api.taskqueue.TaskOptions.Method;
 import com.google.appengine.api.taskqueue.TaskQueuePb.TaskQueueQueryAndOwnTasksResponse.Task;
 
@@ -114,10 +115,11 @@ public class CarRentalModel {
 	 */
 	public Reservation confirmQuote(Quote q) throws ReservationException {
 		Queue queue = QueueFactory.getDefaultQueue();
-        queue.add(withUrl("/worker").param("carRenter", q.getCarRenter()).param("carType", q.getCarType())
+		TaskOptions task = withUrl("/worker").param("carRenter", q.getCarRenter()).param("carType", q.getCarType())
         		.param("company", q.getRentalCompany()).param("price", q.getRentalPrice()+"")
-        		.param("startDate", q.getStartDate().toString()).param("endDate", q.getEndDate().toString()));
-        System.out.println("confirming quote");
+        		.param("startDate", q.getStartDate().toString()).param("endDate", q.getEndDate().toString());
+
+        queue.add(task);
         return null;
 	}
 	

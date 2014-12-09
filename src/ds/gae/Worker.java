@@ -16,6 +16,9 @@ import javax.servlet.http.HttpServletResponse;
 import ds.gae.entities.CarRentalCompany;
 import ds.gae.entities.Quote;
 import ds.gae.entities.Reservation;
+import ds.gae.entities.ReservationConstraints;
+import ds.gae.view.JSPSite;
+import ds.gae.view.ViewTools;
 
 public class Worker extends HttpServlet {
 	private static final long serialVersionUID = -7058685883212377590L;
@@ -23,7 +26,6 @@ public class Worker extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		super.doPost(req, resp);
 		
 		String startDate = req.getParameter("startDate");
 		DateFormat format = new SimpleDateFormat("EEE MMM dd hh:mm:ss zzz yyyy");
@@ -64,10 +66,8 @@ public class Worker extends HttpServlet {
 			System.out.println("failed to confirm quote");
 		}
         em.close();
-		
-        //resp.setContentType("text/plain");
-        //String returnvalue = "200 OK";
-        //resp.getWriter().println(returnvalue);
 
+        resp.sendRedirect(JSPSite.CREATE_QUOTES.url());
+		
 	}
 }
