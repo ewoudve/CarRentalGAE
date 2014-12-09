@@ -60,10 +60,10 @@ for (JSPSite site : JSPSite.publiclyLinkedValues()) {
 	 <div class="groupLabel"><b>Failed Reservations</b></div>
 	 <%
 	 List<Reservation> reservations = CarRentalModel.get().getReservations(renter);
-	 if(CarRentalModel.checkUserLastConfirm(renter) != null){ %>
+	 if(CarRentalModel.get().checkUserLastConfirm(renter) != null){ %>
 	 <p> Your last set of reservations has failed! <br>
 	 The following problem occurred: <br>
-	 <%=CarRentalModel.checkUserLastConfirm(renter).getMessage()%>
+	 <%=CarRentalModel.get().checkUserLastConfirm(renter).getMessage()%>
 	 </p>
 	 <% }else if(reservations != null && reservations.size() > 0){%>
 	 <p> There has been no problem confirming your last set of reservations!</p>

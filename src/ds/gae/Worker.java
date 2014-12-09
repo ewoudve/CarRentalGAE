@@ -45,7 +45,7 @@ public class Worker extends HttpServlet {
 				crc.cancelReservation(r);
 			}
 			em.close();
-			CarRentalModel.failedReservationsPerUser.put(quotes.get(0).getCarRenter(), re);
+			CarRentalModel.get().failedReservationsPerUser.put(quotes.get(0).getCarRenter(), re);
 			//HttpSession session = req.getSession();
 			//session.setAttribute("errorMsg", ViewTools.encodeHTML(re.getMessage()));
 			//resp.sendRedirect(JSPSite.RESERVATION_ERROR.url());	

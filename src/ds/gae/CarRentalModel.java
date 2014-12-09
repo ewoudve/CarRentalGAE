@@ -26,7 +26,7 @@ import static com.google.appengine.api.taskqueue.TaskOptions.Builder.*;
 
 public class CarRentalModel {
 	
-	public static HashMap<String, ReservationException> failedReservationsPerUser = new HashMap<String, ReservationException>();
+	public HashMap<String, ReservationException> failedReservationsPerUser = new HashMap<String, ReservationException>();
 
 	public Map<String,CarRentalCompany> CRCS = new HashMap<String, CarRentalCompany>();	
 
@@ -246,7 +246,7 @@ public class CarRentalModel {
 		return this.getReservations(renter).size() > 0;		
 	}	
 	
-	public static ReservationException checkUserLastConfirm(String user){
+	public ReservationException checkUserLastConfirm(String user){
 		ReservationException re = failedReservationsPerUser.get(user);
 		return re;
 	}
