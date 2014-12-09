@@ -1,8 +1,4 @@
-<%@page import="java.util.List"%>
-<%@page import="ds.gae.CarRentalModel"%>
-<%@page import="ds.gae.entities.Reservation"%>
 <%@page import="ds.gae.view.JSPSite"%>
-<%@page import="ds.gae.view.ViewTools"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <% 
@@ -54,46 +50,11 @@ for (JSPSite site : JSPSite.publiclyLinkedValues()) {
    }
  %>
 			<div class="frameDiv" style="margin: 150px 150px;">
-				<H2>Reply</H2>
+				<H2>Processing request</H2>
 				<div class="group">
 					<p>
-					TODO: Here you can give some information to client who is currently 
-							logged in as user <%=renter%>.
+					The reservations of <%=renter%> are currently being processed.
 					</p>
-					<div class="groupLabel">Current Reservations for user <%=renter%></div>
-			<div class="group">
-				<table>
-					<tr>
-						<th>Rental Company</th>					
-						<th>Car Type/ID</th>
-						<th>Rental Period</th>
-						<th>Rental Price</th>			
-					</tr>
-						
-	<%
-	List<Reservation> reservations = CarRentalModel.get().getReservations(renter);
-	
-	if ( reservations != null && reservations.size() > 0) {
-		
-		for (Reservation r : reservations) { 
-	 %>
-					<tr>
-						<td><%= r.getRentalCompany()%></td>
-						<td><%= r.getCarType()%>/<%= r.getCarId()%></td>
-						<td><%= ViewTools.DATE_FORMAT.format(r.getStartDate()) %> - <%= ViewTools.DATE_FORMAT.format(r.getEndDate())%></td>
-						<td class="numbers"><%= r.getRentalPrice()%> €</td>
-					</tr>
-	<%
-		} 
-	} else {
-	 %>
-					<tr><td colspan="6">No Reservations</td></tr>
-	<%
-	} 
-	 %>			
-				</table>
-
-			</div>
 				</div>
 			</div>
 

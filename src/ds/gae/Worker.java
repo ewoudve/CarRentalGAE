@@ -36,18 +36,19 @@ public class Worker extends HttpServlet {
 			for (Quote quote : quotes) {
 				done.add(confirmQuote(quote));
 			}
-			resp.sendRedirect(JSPSite.CREATE_QUOTES.url());
+			//resp.sendRedirect(JSPSite.CREATE_QUOTES.url());
 		} catch (ReservationException re) {
 			EntityManager em = EMF.get().createEntityManager();
 			for (Reservation r : done) {
 				CarRentalCompany crc = em.find(CarRentalCompany.class,
 						r.getRentalCompany());
 				crc.cancelReservation(r);
+				System.out.println("cancelled reservation : " + r.toString());
 			}
 			em.close();
-			HttpSession session = req.getSession();
-			session.setAttribute("errorMsg", ViewTools.encodeHTML(re.getMessage()));
-			resp.sendRedirect(JSPSite.RESERVATION_ERROR.url());	
+			//HttpSession session = req.getSession();
+			//session.setAttribute("errorMsg", ViewTools.encodeHTML(re.getMessage()));
+			//resp.sendRedirect(JSPSite.RESERVATION_ERROR.url());	
 		}
 	}
 	
