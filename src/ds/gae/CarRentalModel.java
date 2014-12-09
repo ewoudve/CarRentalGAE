@@ -43,11 +43,13 @@ public class CarRentalModel {
 		Set<String> names = new HashSet<String>();
 		Query query = em
 				.createQuery(
-						"SELECT ct.name FROM CarType ct WHERE ct IN"
-								+ "(SELECT crc.carTypes FROM CarRentalCompany crc WHERE crc.name=:company)")
+						"SELECT crc.carTypes FROM CarRentalCompany crc WHERE crc.name=:company")
 				.setParameter("company", crcName);
-		names.addAll(query.getResultList());
+		Set<CarType> types = (Set<CarType>)query.getSingleResult();
 		em.close();
+		for (CarType ct : types) {
+			names.add(ct.getName());
+		}
 		return names;
 	}
 
