@@ -11,12 +11,19 @@ import java.util.Set;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
+import com.google.appengine.api.taskqueue.Queue;
+import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.TaskOptions.Method;
+import com.google.appengine.api.taskqueue.TaskQueuePb.TaskQueueQueryAndOwnTasksResponse.Task;
+
 import ds.gae.entities.Car;
 import ds.gae.entities.CarRentalCompany;
 import ds.gae.entities.CarType;
 import ds.gae.entities.Quote;
 import ds.gae.entities.Reservation;
 import ds.gae.entities.ReservationConstraints;
+import static com.google.appengine.api.taskqueue.TaskOptions.Builder.*;
+
  
 public class CarRentalModel {
 	
@@ -106,12 +113,12 @@ public class CarRentalModel {
 	 * 			Confirmation of given quote failed.	
 	 */
 	public Reservation confirmQuote(Quote q) throws ReservationException {
-        EntityManager em = EMF.get().createEntityManager();
-    	CarRentalCompany crc = em.find(CarRentalCompany.class, q.getRentalCompany());
-        Reservation r = crc.confirmQuote(q);
-        em.persist(r);
-        em.close();
-        return r;
+		Queue queue = QueueFactory.getDefaultQueue();
+        queue.add(withUrl("/worker").param("carRenter", q.getCarRenter()).param("carType", q.getCarType())
+        		.param("company", q.getRentalCompany()).param("price", q.getRentalPrice()+"")
+        		.param("startDate", q.getStartDate().toString()).param("endDate", q.getEndDate().toString()));
+        System.out.println("confirming quote");
+        return null;
 	}
 	
     /**
