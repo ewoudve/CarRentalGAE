@@ -57,7 +57,20 @@ for (JSPSite site : JSPSite.publiclyLinkedValues()) {
 			
 	<% 
 	 %>
-			<div class="groupLabel">Current Reservations</div>
+	 <div class="groupLabel"><b>Failed Reservations</b></div>
+	 <%
+	 List<Reservation> reservations = CarRentalModel.get().getReservations(renter);
+	 if(CarRentalModel.checkUserLastConfirm(renter) != null){ %>
+	 <p> Your last set of reservations has failed! <br>
+	 The following problem occurred: <br>
+	 <%=CarRentalModel.checkUserLastConfirm(renter).getMessage()%>
+	 </p>
+	 <% }else if(reservations != null && reservations.size() > 0){%>
+	 <p> There has been no problem confirming your last set of reservations!</p>
+	 <%}else{ %>
+	 <p> You have not yet made any reservations </p>
+	 <%} %>
+			<div class="groupLabel"><b>Current Reservations</b></div>
 			<div class="group">
 				<table>
 					<tr>
@@ -68,7 +81,7 @@ for (JSPSite site : JSPSite.publiclyLinkedValues()) {
 					</tr>
 						
 	<%
-	List<Reservation> reservations = CarRentalModel.get().getReservations(renter);
+	
 	
 	if ( reservations != null && reservations.size() > 0) {
 		

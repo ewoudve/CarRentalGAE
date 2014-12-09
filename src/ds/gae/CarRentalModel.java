@@ -25,6 +25,8 @@ import static com.google.appengine.api.taskqueue.TaskOptions.Builder.*;
 
 
 public class CarRentalModel {
+	
+	public static HashMap<String, ReservationException> failedReservationsPerUser = new HashMap<String, ReservationException>();
 
 	public Map<String,CarRentalCompany> CRCS = new HashMap<String, CarRentalCompany>();	
 
@@ -131,6 +133,8 @@ public class CarRentalModel {
 	 * 			Therefore none of the given quotes is confirmed.
 	 */
 	public void confirmQuotes(List<Quote> quotes) throws ReservationException { 
+		failedReservationsPerUser.put(quotes.get(0).getCarRenter(), null);
+		
 		Queue queue = QueueFactory.getDefaultQueue();
 		TaskOptions task = withUrl("/worker").param("amountOfQuotes", quotes.size()+"");
 		
@@ -241,4 +245,9 @@ public class CarRentalModel {
 	public boolean hasReservations(String renter) {
 		return this.getReservations(renter).size() > 0;		
 	}	
+	
+	public static ReservationException checkUserLastConfirm(String user){
+		ReservationException re = failedReservationsPerUser.get(user);
+		return re;
+	}
 }
