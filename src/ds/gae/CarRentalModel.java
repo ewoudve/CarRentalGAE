@@ -105,12 +105,13 @@ public class CarRentalModel {
 	 * @throws ReservationException
 	 * 			Confirmation of given quote failed.	
 	 */
-	public void confirmQuote(Quote q) throws ReservationException {
+	public Reservation confirmQuote(Quote q) throws ReservationException {
         EntityManager em = EMF.get().createEntityManager();
     	CarRentalCompany crc = em.find(CarRentalCompany.class, q.getRentalCompany());
         Reservation r = crc.confirmQuote(q);
         em.persist(r);
         em.close();
+        return r;
 	}
 	
     /**
@@ -129,7 +130,7 @@ public class CarRentalModel {
 
 		try {
 			for (Quote quote : quotes) {
-				confirmQuote(quote);
+				done.add(confirmQuote(quote));
 			}
 		} catch (ReservationException re) {
 			EntityManager em = EMF.get().createEntityManager();
