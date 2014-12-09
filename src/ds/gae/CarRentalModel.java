@@ -14,8 +14,6 @@ import javax.persistence.Query;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
-import com.google.appengine.api.taskqueue.TaskOptions.Method;
-import com.google.appengine.api.taskqueue.TaskQueuePb.TaskQueueQueryAndOwnTasksResponse.Task;
 
 import ds.gae.entities.Car;
 import ds.gae.entities.CarRentalCompany;
@@ -25,19 +23,19 @@ import ds.gae.entities.Reservation;
 import ds.gae.entities.ReservationConstraints;
 import static com.google.appengine.api.taskqueue.TaskOptions.Builder.*;
 
- 
+
 public class CarRentalModel {
-	
+
 	public Map<String,CarRentalCompany> CRCS = new HashMap<String, CarRentalCompany>();	
-	
+
 	private static CarRentalModel instance;
-	
+
 	public static CarRentalModel get() {
 		if (instance == null)
 			instance = new CarRentalModel();
 		return instance;
 	}
-		
+
 	/**
 	 * Get the car types available in the given car rental company.
 	 *
@@ -52,7 +50,7 @@ public class CarRentalModel {
 		Query query = em
 				.createQuery(
 						"SELECT crc.carTypes FROM CarRentalCompany crc WHERE crc.name=:company")
-				.setParameter("company", crcName);
+						.setParameter("company", crcName);
 		Set<CarType> types = (Set<CarType>)query.getSingleResult();
 		em.close();
 		for (CarType ct : types) {
@@ -61,20 +59,20 @@ public class CarRentalModel {
 		return names;
 	}
 
-    /**
-     * Get all registered car rental companies
-     *
-     * @return	the list of car rental companies
-     */
-    public Collection<String> getAllRentalCompanyNames() {
-    	Set<String> names = new HashSet<String>();
-    	EntityManager em = EMF.get().createEntityManager();
-    	Query query = em.createQuery("SELECT crc.name FROM CarRentalCompany crc");
-    	names.addAll(query.getResultList());
-    	em.close();
-    	return names;
-    }
-	
+	/**
+	 * Get all registered car rental companies
+	 *
+	 * @return	the list of car rental companies
+	 */
+	public Collection<String> getAllRentalCompanyNames() {
+		Set<String> names = new HashSet<String>();
+		EntityManager em = EMF.get().createEntityManager();
+		Query query = em.createQuery("SELECT crc.name FROM CarRentalCompany crc");
+		names.addAll(query.getResultList());
+		em.close();
+		return names;
+	}
+
 	/**
 	 * Create a quote according to the given reservation constraints (tentative reservation).
 	 * 
@@ -89,8 +87,8 @@ public class CarRentalModel {
 	 * @throws ReservationException
 	 * 			No car available that fits the given constraints.
 	 */
-    public Quote createQuote(String company, String renterName, ReservationConstraints constraints) throws ReservationException {
-    	EntityManager em = EMF.get().createEntityManager();
+	public Quote createQuote(String company, String renterName, ReservationConstraints constraints) throws ReservationException {
+		EntityManager em = EMF.get().createEntityManager();
 		CarRentalCompany crc = em.find(CarRentalCompany.class, company);
 		Quote out = null;
 
@@ -102,8 +100,8 @@ public class CarRentalModel {
 		em.persist(crc);
 		em.close();
 		return out;
-    }
-    
+	}
+
 	/**
 	 * Confirm the given quote.
 	 *
@@ -113,49 +111,39 @@ public class CarRentalModel {
 	 * @throws ReservationException
 	 * 			Confirmation of given quote failed.	
 	 */
-	public Reservation confirmQuote(Quote q) throws ReservationException {
-		Queue queue = QueueFactory.getDefaultQueue();
-		TaskOptions task = withUrl("/worker").param("carRenter", q.getCarRenter()).param("carType", q.getCarType())
-        		.param("company", q.getRentalCompany()).param("price", q.getRentalPrice()+"")
-        		.param("startDate", q.getStartDate().toString()).param("endDate", q.getEndDate().toString());
-
-        queue.add(task);
-        return null;
+	public Reservation confirmQuote(Quote q) throws ReservationException{
+		EntityManager em = EMF.get().createEntityManager();
+    	CarRentalCompany crc = em.find(CarRentalCompany.class, q.getRentalCompany());
+        Reservation r = crc.confirmQuote(q);
+        em.persist(r);
+        em.close();
+        return r;
 	}
-	
-    /**
+
+	/**
 	 * Confirm the given list of quotes
 	 * 
 	 * @param 	quotes 
 	 * 			the quotes to confirm
-	 * @return	The list of reservations, resulting from confirming all given quotes.
 	 * 
 	 * @throws 	ReservationException
-	 * 			One of the quotes cannot be confirmed. 
+	 * 			One of the quotes cannot be cList<Quote> quotesonfirmed. 
 	 * 			Therefore none of the given quotes is confirmed.
 	 */
-    public List<Reservation> confirmQuotes(List<Quote> quotes) throws ReservationException { 
-    	List<Reservation> done = new ArrayList<Reservation>();
-
-		try {
-			for (Quote quote : quotes) {
-				done.add(confirmQuote(quote));
-			}
-		} catch (ReservationException re) {
-			EntityManager em = EMF.get().createEntityManager();
-			for (Reservation r : done) {
-				CarRentalCompany crc = em.find(CarRentalCompany.class,
-						r.getRentalCompany());
-				crc.cancelReservation(r);
-			}
-			em.close();
-			throw new ReservationException("Reservation failed: "
-					+ re.getMessage());
+	public void confirmQuotes(List<Quote> quotes) throws ReservationException { 
+		Queue queue = QueueFactory.getDefaultQueue();
+		TaskOptions task = withUrl("/worker").param("amountOfQuotes", quotes.size()+"");
+		
+		int index = 0;
+		for(Quote q : quotes){
+			task = task.param("carRenter"+index, q.getCarRenter()).param("carType"+index, q.getCarType())
+					.param("company"+index, q.getRentalCompany()).param("price"+index, q.getRentalPrice()+"")
+					.param("startDate"+index, q.getStartDate().toString()).param("endDate"+index, q.getEndDate().toString());			
+		index++;
 		}
+		queue.add(task);
+	}
 
-		return done;
-    }
-	
 	/**
 	 * Get all reservations made by the given car renter.
 	 *
@@ -173,52 +161,52 @@ public class CarRentalModel {
 		return out;
 	}
 
-    /**
-     * Get the car types available in the given car rental company.
-     *
-     * @param 	crcName
-     * 			the given car rental company
-     * @return	The list of car types in the given car rental company.
-     */
+	/**
+	 * Get the car types available in the given car rental company.
+	 *
+	 * @param 	crcName
+	 * 			the given car rental company
+	 * @return	The list of car types in the given car rental company.
+	 */
 	@SuppressWarnings("unchecked")
 	public Collection<CarType> getCarTypesOfCarRentalCompany(String crcName) {
 		EntityManager em = EMF.get().createEntityManager();
 		Collection<CarType> types = (Collection<CarType>) em.createQuery(
-						"SELECT crc.carTypes FROM CarRentalCompany crc WHERE crc.name=:company")
+				"SELECT crc.carTypes FROM CarRentalCompany crc WHERE crc.name=:company")
 				.setParameter("company", crcName).getSingleResult();
 		em.close();
 		return types;
 	}
-	
-    /**
-     * Get the list of cars of the given car type in the given car rental company.
-     *
-     * @param	crcName
+
+	/**
+	 * Get the list of cars of the given car type in the given car rental company.
+	 *
+	 * @param	crcName
 	 * 			name of the car rental company
-     * @param 	carType
-     * 			the given car type
-     * @return	A list of car IDs of cars with the given car type.
-     */
-    public Collection<Integer> getCarIdsByCarType(String crcName, CarType carType) {
-    	Collection<Integer> out = new ArrayList<Integer>();
-    	for (Car c : getCarsByCarType(crcName, carType)) {
-    		out.add(c.getId());
-    	}
-    	return out;
-    }
-    
-    /**
-     * Get the amount of cars of the given car type in the given car rental company.
-     *
-     * @param	crcName
+	 * @param 	carType
+	 * 			the given car type
+	 * @return	A list of car IDs of cars with the given car type.
+	 */
+	public Collection<Integer> getCarIdsByCarType(String crcName, CarType carType) {
+		Collection<Integer> out = new ArrayList<Integer>();
+		for (Car c : getCarsByCarType(crcName, carType)) {
+			out.add(c.getId());
+		}
+		return out;
+	}
+
+	/**
+	 * Get the amount of cars of the given car type in the given car rental company.
+	 *
+	 * @param	crcName
 	 * 			name of the car rental company
-     * @param 	carType
-     * 			the given car type
-     * @return	A number, representing the amount of cars of the given car type.
-     */
-    public int getAmountOfCarsByCarType(String crcName, CarType carType) {
-    	return this.getCarsByCarType(crcName, carType).size();
-    }
+	 * @param 	carType
+	 * 			the given car type
+	 * @return	A number, representing the amount of cars of the given car type.
+	 */
+	public int getAmountOfCarsByCarType(String crcName, CarType carType) {
+		return this.getCarsByCarType(crcName, carType).size();
+	}
 
 	/**
 	 * Get the list of cars of the given car type in the given car rental company.
