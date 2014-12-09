@@ -24,15 +24,15 @@ public class PersistTestServlet extends HttpServlet {
 		String companyName = "Hertz";
 		String userName = "Pieter A.";
 		
-		req.getSession().setAttribute("renter", userName);
-		
 		try {
-			ReservationConstraints c = new ReservationConstraints(
-					ViewTools.DATE_FORMAT.parse("01.02.2011"), 
-					ViewTools.DATE_FORMAT.parse("01.03.2011"), "Compact");
-		
-			final Quote q = CarRentalModel.get().createQuote(companyName, userName, c);
-			CarRentalModel.get().confirmQuote(q);
+			if (!CarRentalModel.get().hasReservations(userName)) {
+				ReservationConstraints c = new ReservationConstraints(
+						ViewTools.DATE_FORMAT.parse("01.02.2011"), 
+						ViewTools.DATE_FORMAT.parse("01.03.2011"), "Compact");
+			
+				final Quote q = CarRentalModel.get().createQuote(companyName, userName, c);
+				CarRentalModel.get().confirmQuote(q);
+			}
 			
 			resp.sendRedirect(JSPSite.PERSIST_TEST.url());
 		} catch (ParseException e) {
