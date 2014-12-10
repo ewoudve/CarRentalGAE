@@ -14,13 +14,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import ds.gae.entities.CarRentalCompany;
 import ds.gae.entities.Quote;
 import ds.gae.entities.Reservation;
-import ds.gae.view.JSPSite;
-import ds.gae.view.ViewTools;
+import ds.gae.entities.TaskStatus;
 
 public class Worker extends HttpServlet {
 	private static final long serialVersionUID = -7058685883212377590L;
@@ -37,7 +35,11 @@ public class Worker extends HttpServlet {
 			for (Quote quote : quotes) {
 				done.add(confirmQuote(quote));
 			}
-			//resp.sendRedirect(JSPSite.CREATE_QUOTES.url());
+			TaskStatus status = new TaskStatus(quotes.get(0).getCarRenter(), "RESERVATION(S) SUCCESSFUL");
+			EntityManager em = EMF.get().createEntityManager();
+			CarRentalModel.get().addTaskStatus(status);
+			em.persist(status);
+			em.close();
 		} catch (ReservationException re) {
 			EntityManager em = EMF.get().createEntityManager();
 			for (Reservation r : done) {
@@ -46,10 +48,12 @@ public class Worker extends HttpServlet {
 				crc.cancelReservation(r);
 			}
 			em.close();
-			CarRentalModel.get().failedReservationsPerUser.put(quotes.get(0).getCarRenter(), re);
-			//HttpSession session = req.getSession();
-			//session.setAttribute("errorMsg", ViewTools.encodeHTML(re.getMessage()));
-			//resp.sendRedirect(JSPSite.RESERVATION_ERROR.url());	
+			
+			EntityManager em2 = EMF.get().createEntityManager();
+			TaskStatus status = new TaskStatus(quotes.get(0).getCarRenter(), re.getMessage());
+			CarRentalModel.get().addTaskStatus(status);
+			em2.persist(status);
+			em2.close();
 		}
 	}
 	

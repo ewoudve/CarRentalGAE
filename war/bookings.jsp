@@ -61,12 +61,9 @@ for (JSPSite site : JSPSite.publiclyLinkedValues()) {
 	 <%
 	 List<Reservation> reservations = CarRentalModel.get().getReservations(renter);
 	 if(CarRentalModel.get().checkUserLastConfirm(renter) != null){ %>
-	 <p> Your last set of reservations has failed! <br>
-	 The following problem occurred: <br>
+	 <p>
 	 <%=CarRentalModel.get().checkUserLastConfirm(renter).getMessage()%>
 	 </p>
-	 <% }else if(reservations != null && reservations.size() > 0){%>
-	 <p> There has been no problem confirming your last set of reservations!</p>
 	 <%}else{ %>
 	 <p> You have not yet made any reservations </p>
 	 <%} %>

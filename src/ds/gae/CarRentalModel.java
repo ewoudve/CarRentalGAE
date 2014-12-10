@@ -8,7 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.EntityManager;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Query;
 
 import com.google.appengine.api.taskqueue.Queue;
@@ -21,13 +24,18 @@ import ds.gae.entities.CarType;
 import ds.gae.entities.Quote;
 import ds.gae.entities.Reservation;
 import ds.gae.entities.ReservationConstraints;
+import ds.gae.entities.TaskStatus;
 import static com.google.appengine.api.taskqueue.TaskOptions.Builder.*;
 
-
+@NamedQuery(
+		name="getTaskStatus",
+		query=	"SELECT s FROM TaskStatus s "
+			   +"WHERE s.renter=:renter") 
 public class CarRentalModel {
 	
-	public HashMap<String, ReservationException> failedReservationsPerUser = new HashMap<String, ReservationException>();
-
+	@OneToMany(cascade=CascadeType.PERSIST)
+	private Set<TaskStatus> statusSet = new HashSet<TaskStatus>();;
+	
 	public Map<String,CarRentalCompany> CRCS = new HashMap<String, CarRentalCompany>();	
 
 	private static CarRentalModel instance;
@@ -133,7 +141,13 @@ public class CarRentalModel {
 	 * 			Therefore none of the given quotes is confirmed.
 	 */
 	public void confirmQuotes(List<Quote> quotes) throws ReservationException { 
-		failedReservationsPerUser.put(quotes.get(0).getCarRenter(), null);
+		if(quotes == null || quotes.size() == 0){
+			return;
+		}
+		TaskStatus lastStatus = checkUserLastConfirm(quotes.get(0).getCarRenter());
+		if(lastStatus != null){
+			this.statusSet.remove(lastStatus);
+		}
 		
 		Queue queue = QueueFactory.getDefaultQueue();
 		TaskOptions task = withUrl("/worker").param("amountOfQuotes", quotes.size()+"");
@@ -246,8 +260,15 @@ public class CarRentalModel {
 		return this.getReservations(renter).size() > 0;		
 	}	
 	
-	public ReservationException checkUserLastConfirm(String user){
-		ReservationException re = failedReservationsPerUser.get(user);
-		return re;
+	public TaskStatus checkUserLastConfirm(String user){
+		EntityManager em = EMF.get().createEntityManager();
+		TaskStatus status = em.find(TaskStatus.class, user);
+		em.close();
+		
+		return status;
+	}
+	
+	public void addTaskStatus(TaskStatus status){
+		this.statusSet.add(status);
 	}
 }
