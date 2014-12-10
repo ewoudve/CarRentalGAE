@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import javax.persistence.EntityManager;
 import javax.servlet.ServletException;
@@ -76,7 +77,7 @@ public class Worker extends HttpServlet {
 		
 		for(int index=0; index<amountOfQuotes; index++){
 			String startDate = req.getParameter("startDate"+index);
-			DateFormat format = new SimpleDateFormat("EEE MMM dd hh:mm:ss zzz yyyy");
+			DateFormat format = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH);
 			Date sDate = null;
 			try {
 				sDate = format.parse(startDate);
