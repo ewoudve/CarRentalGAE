@@ -57,7 +57,7 @@ for (JSPSite site : JSPSite.publiclyLinkedValues()) {
 			
 	<% 
 	 %>
-	 <div class="groupLabel"><b>Failed Reservations</b></div>
+	 <div class="groupLabel"><b>Last Reservations</b></div>
 	 <%
 	 List<Reservation> reservations = CarRentalModel.get().getReservations(renter);
 	 if(CarRentalModel.get().checkUserLastConfirm(renter) != null){ %>
